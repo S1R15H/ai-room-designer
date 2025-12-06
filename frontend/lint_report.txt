@@ -1,0 +1,55 @@
+
+/Users/sirishgurung/Desktop/ai-room-designer/frontend/app/page.tsx
+  5:18  warning  'HomeIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/sirishgurung/Desktop/ai-room-designer/frontend/components/ResultViewer.tsx
+  17:40  warning  'originalUrl' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  22:49  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/sirishgurung/Desktop/ai-room-designer/frontend/components/ResultViewer.tsx:22:49
+  20 |         ...item,
+  21 |         category: item.category || 'Furniture',
+> 22 |         price: Number(item.price) || Math.floor(Math.random() * 500) + 50
+     |                                                 ^^^^^^^^^^^^^ Cannot call impure function
+  23 |     }));
+  24 |
+  25 |     const totalCost = displayItems.reduce((sum, item) => sum + (item.price || 0), 0);  react-hooks/purity
+  48:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+
+/Users/sirishgurung/Desktop/ai-room-designer/frontend/components/Upload.tsx
+   4:32  warning  'Image' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   4:55  warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  33:17  error    Error: Cannot access variable before it is declared
+
+`handleFileSelection` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/sirishgurung/Desktop/ai-room-designer/frontend/components/Upload.tsx:33:17
+  31 |             const file = e.dataTransfer.files[0];
+  32 |             if (file.type.startsWith('image/')) {
+> 33 |                 handleFileSelection(file);
+     |                 ^^^^^^^^^^^^^^^^^^^ `handleFileSelection` accessed before it is declared
+  34 |             }
+  35 |         }
+  36 |     }, []);
+
+/Users/sirishgurung/Desktop/ai-room-designer/frontend/components/Upload.tsx:44:5
+  42 |     };
+  43 |
+> 44 |     const handleFileSelection = (file: File) => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 45 |         onFileSelect(file);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 46 |         setPreview(URL.createObjectURL(file));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |     };
+     | ^^^^^^^ `handleFileSelection` is declared here
+  48 |
+  49 |     const handleRemove = () => {
+  50 |         onFileSelect(null);  react-hooks/immutability
+  36:8   warning  React Hook useCallback has a missing dependency: 'handleFileSelection'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  84:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+
+✖ 9 problems (2 errors, 7 warnings)
+

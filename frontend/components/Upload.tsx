@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Upload as UploadIcon, Image, Sparkles, Home, X } from 'lucide-react';
+import { Upload as UploadIcon, Sparkles, Home } from 'lucide-react';
+import Image from 'next/image';
 
 interface UploadProps {
     onFileSelect: (file: File | null) => void;
@@ -12,6 +13,11 @@ interface UploadProps {
 export default function Upload({ onFileSelect, currentFile, onNext }: UploadProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [preview, setPreview] = useState<string | null>(currentFile ? URL.createObjectURL(currentFile) : null);
+
+    const handleFileSelection = useCallback((file: File) => {
+        onFileSelect(file);
+        setPreview(URL.createObjectURL(file));
+    }, [onFileSelect]);
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -33,7 +39,7 @@ export default function Upload({ onFileSelect, currentFile, onNext }: UploadProp
                 handleFileSelection(file);
             }
         }
-    }, []);
+    }, [handleFileSelection]);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -41,10 +47,7 @@ export default function Upload({ onFileSelect, currentFile, onNext }: UploadProp
         }
     };
 
-    const handleFileSelection = (file: File) => {
-        onFileSelect(file);
-        setPreview(URL.createObjectURL(file));
-    };
+
 
     const handleRemove = () => {
         onFileSelect(null);
@@ -81,7 +84,14 @@ export default function Upload({ onFileSelect, currentFile, onNext }: UploadProp
                 <div className="text-center">
                     {preview ? (
                         <div className="text-center">
-                            <img src={preview} alt="Preview" className="mx-auto h-64 object-cover rounded-xl shadow-md mb-6" />
+                            <Image
+                                src={preview}
+                                alt="Preview"
+                                width={800}
+                                height={600}
+                                className="mx-auto h-64 w-auto object-cover rounded-xl shadow-md mb-6"
+                                unoptimized
+                            />
                             <div className="flex justify-center gap-4">
                                 <button
                                     type="button"

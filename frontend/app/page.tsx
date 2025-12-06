@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Wizard from '../components/Wizard';
-import { Home as HomeIcon } from 'lucide-react';
 
 export default function Home() {
   return (

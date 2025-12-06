@@ -3,15 +3,31 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Testing
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
 # Virtual Environment
 venv/
 env/
+ENV/
 .env
+.venv
 
 # Distribution / Build
 build/
 dist/
 *.egg-info/
+.eggs/
 
 # OS
 .DS_Store
+
+# MyPy
+.mypy_cache/
+dmypy.json
+dmypy.json.gz

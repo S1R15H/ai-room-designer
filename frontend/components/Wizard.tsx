@@ -91,12 +91,19 @@ const STEPS = [
     }
 ];
 
+interface Item {
+    name: string;
+    link: string;
+    category?: string;
+    price?: number;
+}
+
 export default function Wizard() {
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [file, setFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<{ original_url: string; generated_url: string; items: Item[] } | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const handleNext = () => {
@@ -135,8 +142,12 @@ export default function Wizard() {
             const data = await generateRoomDesign(formData);
             setResult(data);
             handleNext(); // Go to result step
-        } catch (err: any) {
-            setError(err.message || 'Something went wrong');
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Something went wrong');
+            }
         } finally {
             setIsProcessing(false);
         }

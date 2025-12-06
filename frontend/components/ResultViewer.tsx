@@ -1,5 +1,6 @@
 import React from 'react';
 import { ExternalLink, RotateCcw } from 'lucide-react';
+import Image from 'next/image';
 
 interface Item {
     name: string;
@@ -9,18 +10,16 @@ interface Item {
 }
 
 interface ResultViewerProps {
-    originalUrl: string;
     generatedUrl: string;
     items?: Item[];
 }
 
-export default function ResultViewer({ originalUrl, generatedUrl, items = [] }: ResultViewerProps) {
-    // Mock data for display if missing
-    const displayItems = items.map(item => ({
+export default function ResultViewer({ generatedUrl, items = [] }: ResultViewerProps) {
+    const displayItems = React.useMemo(() => items.map(item => ({
         ...item,
         category: item.category || 'Furniture',
-        price: Number(item.price) || Math.floor(Math.random() * 500) + 50
-    }));
+        price: Number(item.price) || (item.name.length * 10) + 50
+    })), [items]);
 
     const totalCost = displayItems.reduce((sum, item) => sum + (item.price || 0), 0);
 
@@ -45,10 +44,12 @@ export default function ResultViewer({ originalUrl, generatedUrl, items = [] }: 
                 {/* Main Image Area */}
                 <div className="flex-1 h-full">
                     <div className="relative rounded-3xl overflow-hidden shadow-2xl h-full w-full">
-                        <img
+                        <Image
                             src={generatedUrl}
                             alt="Generated Design"
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            unoptimized
                         />
                         <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium">
                             AI Generated

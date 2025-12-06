@@ -8,3 +8,5 @@ langchain
 langgraph
 langchain-aws
 langchain-community
+ruff
+pytest

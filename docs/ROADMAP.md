@@ -1,31 +1,74 @@
-# Project Roadmap
+# Project Work Breakdown Structure (WBS)
 
-This document outlines the development plan for the AI Room Designer, from initial testing to final deployment.
+This WBS outlines the tasks required to master AI Agentic Flows, Modern GenAI requirements, Terraform, and CI/CD.
+**Optimized Order**: This roadmap is structured to prioritize "DevOps Foundation" first. By setting up linting, testing, and infrastructure early, we ensure a stable environment for building complex AI features.
 
-## Phase 1: Testing & Validation (Current Status)
-- [x] **Basic Functionality**: Verify image upload and generation flow.
-- [ ] **Unit Tests**:
-    - Backend: Test API endpoints with mocked AWS services.
-    - Frontend: Test component rendering and user interactions.
-- [ ] **Integration Tests**: End-to-end testing of the full flow.
-- [ ] **Error Handling**: Improve error messages for failed uploads or AI timeouts.
+## 1.0 Project Setup & CI Foundation (GitHub Actions)
+Focus: Establishing a robust development environment to catch errors early.
 
-## Phase 2: Improvements & Polish
-- [ ] **Image Resizing**: Implement `backend/utils/image_helpers.py` to resize large images before sending to Bedrock (optimizes cost and latency).
-- [ ] **Loading States**: Add a progress bar or skeleton loader during generation.
-- [ ] **Input Validation**: Restrict file types (JPG, PNG) and sizes on both frontend and backend.
-- [ ] **Prompt Engineering**: Experiment with system prompts to improve design quality (e.g., automatically appending "high quality, photorealistic").
+*   **1.1 Quality Assurance (The "Safety Net")**
+    *   [ ] **Linting & Formatting**: Configure `ruff` (Python) and `eslint/prettier` (TypeScript) to run locally.
+    *   [ ] **Pre-commit Hooks**: Prevent bad code from being committed using `pre-commit`.
+    *   [ ] **Unit Testing Framework**: Set up `pytest` (Backend) and `jest` (Frontend).
+*   **1.2 Continuous Integration (CI) Pipeline**
+    *   [ ] **Automated Testing**: Create a GitHub Action to run tests/linting on every Pull Request.
+    *   [ ] **Security Scanning**: Add `trufflehog` (secrets) and `bandit` (vulnerabilities) to the CI pipeline.
 
-## Phase 3: New Features
-- [ ] **User Accounts**: Allow users to save their generated designs.
-- [ ] **History View**: A gallery of past designs.
-- [ ] **Social Sharing**: Buttons to share results on social media.
-- [ ] **Style Presets**: Dropdown menu for common styles (Modern, Minimalist, Cyberpunk, etc.) instead of just free text.
-- [ ] **Masking/Inpainting**: Allow users to select specific areas of the room to redesign.
+## 2.0 Advanced Agentic Workflow (LangGraph & Bedrock)
+Focus: Moving beyond linear chains to complex, stateful, and iterative agent behaviors.
 
-## Phase 4: Deployment
-- [ ] **Containerization**: Create `Dockerfile` for backend and frontend.
-- [ ] **Backend Deployment**: Deploy FastAPI to AWS Lambda (using Mangum) or AWS App Runner.
-- [ ] **Frontend Deployment**: Deploy Next.js to Vercel or AWS Amplify.
-- [ ] **CI/CD**: Set up GitHub Actions for automated testing and deployment.
-- [ ] **Domain & SSL**: Configure a custom domain and HTTPS.
+*   **2.1 State Management & Persistence**
+    *   [ ] Implement a database (PostgreSQL/SQLite) to persist `LangGraph` state (checkpoints).
+    *   [ ] Allow users to resume a design session from a previous state.
+*   **2.2 Human-in-the-Loop (HITL)**
+    *   [ ] Add a "Critique" node where the user can provide feedback on the generated image.
+    *   [ ] Implement a feedback loop: `Generation -> User Critique -> Refinement -> Generation`.
+    *   [ ] Allow users to manually edit the "Selected Items" list before generation.
+*   **2.3 Multi-Agent Collaboration**
+    *   [ ] **Researcher Agent**: Searches the web for current interior design trends (using a search tool).
+    *   [ ] **Critic Agent**: Critiques the generated prompt against design principles before image generation.
+    *   [ ] **Manager Agent**: Orchestrates the workflow and decides when the design is "finished".
+
+## 3.0 Modern GenAI Requirements (RAG & Multimodal)
+Focus: Enhancing the AI's context and capabilities using external data and multiple modalities.
+
+*   **3.1 RAG (Retrieval-Augmented Generation) for Design Knowledge**
+    *   [ ] **Knowledge Base**: Create a vector database (e.g., Pinecone, pgvector) with interior design guidelines, color theory, and furniture catalogs.
+    *   [ ] **Retrieval Node**: Query the knowledge base to enrich the prompt with expert design advice based on the user's style choice.
+*   **3.2 Multimodal Inputs**
+    *   [ ] **Image Analysis**: Use a Vision Model (Claude 3.5 Sonnet / GPT-4o) to analyze the *uploaded* room image before generation.
+    *   [ ] Extract existing furniture layout, lighting conditions, and architectural style to inform the generation prompt better.
+*   **3.3 Structured Output**
+    *   [ ] Enforce strict JSON schemas for all LLM outputs using Pydantic models.
+
+## 4.0 Containerization & Infrastructure (Terraform)
+Focus: Provisioning and managing AWS infrastructure professionally.
+
+*   **4.1 Containerization**
+    *   [ ] Create optimized `Dockerfile` for Backend (Python) and Frontend (Next.js).
+    *   [ ] Test containers locally with `docker-compose`.
+*   **4.2 Infrastructure as Code (Terraform)**
+    *   [ ] **Setup**: Configure Terraform with remote state (S3 + DynamoDB).
+    *   [ ] **Core Infra**: VPC, Subnets, Security Groups, ECR Repositories.
+    *   [ ] **IAM**: Least-privilege roles for Bedrock, S3, and Lambda.
+    *   [ ] **App Infra**: Provision AWS App Runner (or Lambda) and S3 buckets.
+
+## 5.0 Continuous Delivery (CD)
+Focus: Automating the deployment of the application.
+
+*   **5.1 Build & Push**
+    *   [ ] Create GitHub Action to build Docker images and push to AWS ECR on merge to `main`.
+*   **5.2 Infrastructure Deployment**
+    *   [ ] Automate `terraform apply` in the pipeline (with manual approval gate).
+*   **5.3 Application Deployment**
+    *   [ ] Update the running AWS services with the new Docker image tags.
+
+## 6.0 Observability & Monitoring
+Focus: Understanding how the system behaves in production.
+
+*   **6.1 Structured Logging**
+    *   [ ] Implement JSON logging for the backend.
+*   **6.2 Tracing**
+    *   [ ] Integrate AWS X-Ray to trace requests through the API -> LangGraph -> Bedrock.
+*   **6.3 Metrics & Alarms**
+    *   [ ] Set up CloudWatch Alarms for API errors and high latency.

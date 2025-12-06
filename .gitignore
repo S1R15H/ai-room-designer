@@ -1,6 +1,16 @@
 # IDEs
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# General
+tmp/
+temp/
+*.log
