@@ -10,3 +10,4 @@ langchain-aws
 langchain-community
 ruff
 pytest
+bandit

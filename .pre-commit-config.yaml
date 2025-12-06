@@ -4,3 +4,33 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: bandit
+        name: bandit
+        entry: ./backend/venv/bin/bandit
+        language: system
+        types: [python]
+        args: ["-r", "backend", "-x", "backend/tests,backend/venv"]
+        pass_filenames: false
+
+      - id: frontend-eslint
+        name: frontend-eslint
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
+        pass_filenames: false
+
+      - id: frontend-prettier
+        name: frontend-prettier
+        entry: bash -c 'cd frontend && npx prettier --check .'
+        language: system
+        types_or: [javascript, jsx, ts, tsx, json, css, scss, markdown]
+        pass_filenames: false
+
+      - id: frontend-test
+        name: frontend-test
+        entry: bash -c 'cd frontend && npm run test'
+        language: system
+        pass_filenames: false

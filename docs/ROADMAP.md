@@ -7,18 +7,18 @@ This WBS outlines the tasks required to master AI Agentic Flows, Modern GenAI re
 Focus: Establishing a robust development environment to catch errors early.
 
 *   **1.1 Quality Assurance (The "Safety Net")**
-    *   [ ] **Linting & Formatting**: Configure `ruff` (Python) and `eslint/prettier` (TypeScript) to run locally.
-    *   [ ] **Pre-commit Hooks**: Prevent bad code from being committed using `pre-commit`.
-    *   [ ] **Unit Testing Framework**: Set up `pytest` (Backend) and `jest` (Frontend).
+    *   [x] **Linting & Formatting**: Configure `ruff` (Python) and `eslint/prettier` (TypeScript) to run locally.
+    *   [x] **Pre-commit Hooks**: Prevent bad code from being committed using `pre-commit`.
+    *   [x] **Unit Testing Framework**: Set up `pytest` (Backend) and `jest` (Frontend).
 *   **1.2 Continuous Integration (CI) Pipeline**
-    *   [ ] **Automated Testing**: Create a GitHub Action to run tests/linting on every Pull Request.
-    *   [ ] **Security Scanning**: Add `trufflehog` (secrets) and `bandit` (vulnerabilities) to the CI pipeline.
+    *   [x] **Automated Testing**: Create a GitHub Action to run tests/linting on every Pull Request.
+    *   [x] **Security Scanning**: Add `trufflehog` (secrets) and `bandit` (vulnerabilities) to the CI pipeline.
 
 ## 2.0 Advanced Agentic Workflow (LangGraph & Bedrock)
 Focus: Moving beyond linear chains to complex, stateful, and iterative agent behaviors.
 
 *   **2.1 State Management & Persistence**
-    *   [ ] Implement a database (PostgreSQL/SQLite) to persist `LangGraph` state (checkpoints).
+    *   [ ] Implement a database (MongoDB) to persist `LangGraph` state (checkpoints).
     *   [ ] Allow users to resume a design session from a previous state.
 *   **2.2 Human-in-the-Loop (HITL)**
     *   [ ] Add a "Critique" node where the user can provide feedback on the generated image.
