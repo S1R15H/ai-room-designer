@@ -18,8 +18,8 @@ Focus: Establishing a robust development environment to catch errors early.
 Focus: Moving beyond linear chains to complex, stateful, and iterative agent behaviors.
 
 *   **2.1 State Management & Persistence**
-    *   [ ] Implement a database (MongoDB) to persist `LangGraph` state (checkpoints).
-    *   [ ] Allow users to resume a design session from a previous state.
+    *   [x] **Implement a database (MongoDB)**: Persist `LangGraph` state (checkpoints).
+    *   [x] **Resume Session**: Allow users to resume a design session from a previous state using `thread_id`.
 *   **2.2 Human-in-the-Loop (HITL)**
     *   [ ] Add a "Critique" node where the user can provide feedback on the generated image.
     *   [ ] Implement a feedback loop: `Generation -> User Critique -> Refinement -> Generation`.
@@ -72,3 +72,17 @@ Focus: Understanding how the system behaves in production.
     *   [ ] Integrate AWS X-Ray to trace requests through the API -> LangGraph -> Bedrock.
 *   **6.3 Metrics & Alarms**
     *   [ ] Set up CloudWatch Alarms for API errors and high latency.
+
+## 7.0 User Experience & Features (Future Suggestions)
+Focus: Enhancing usability and engagement.
+
+*   **7.1 User Accounts & Gallery**
+    *   [ ] Implement Authentication (Clerk/Auth0).
+    *   [ ] **Design Gallery**: Save designs permanently and allow users to browse their history.
+*   **7.2 Advanced Editing**
+    *   [ ] **Inpainting/Masking**: Allow users to select specific areas of the room to change (e.g., "replace only the rug").
+    *   [ ] **Social Sharing**: One-click sharing of "Before/After" comparisons to social media.
+*   **7.3 Shopping Integration**
+    *   [ ] **Real-world Products**: Integrate with Affiliate APIs (Amazon/Wayfair) for real-time pricing and stock.
+    *   [ ] **Budgeting**: Allow users to set a budget constraint for the generated items.
+

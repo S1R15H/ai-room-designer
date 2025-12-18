@@ -34,7 +34,7 @@ jobs:
         pytest
     - name: Security check with Bandit
       run: |
-        bandit -r . -x ./tests -x ./venv
+        bandit -r . -x ./tests,./venv
 
   frontend:
     runs-on: ubuntu-latest

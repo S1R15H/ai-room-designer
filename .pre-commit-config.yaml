@@ -1,12 +1,19 @@
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.0
-    hooks:
-      - id: ruff
-      - id: ruff-format
-
   - repo: local
     hooks:
+      - id: ruff
+        name: ruff
+        entry: ./backend/venv/bin/ruff check
+        args: ["--fix"]
+        language: system
+        types: [python]
+        files: ^backend/
+      - id: ruff-format
+        name: ruff-format
+        entry: ./backend/venv/bin/ruff format
+        language: system
+        types: [python]
+        files: ^backend/
       - id: bandit
         name: bandit
         entry: ./backend/venv/bin/bandit

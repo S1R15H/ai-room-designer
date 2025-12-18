@@ -8,16 +8,18 @@ interface UploadProps {
   onFileSelect: (file: File | null) => void;
   currentFile: File | null;
   onNext: () => void;
+  initialPreviewUrl?: string | null;
 }
 
 export default function Upload({
   onFileSelect,
   currentFile,
   onNext,
+  initialPreviewUrl,
 }: UploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(
-    currentFile ? URL.createObjectURL(currentFile) : null
+    currentFile ? URL.createObjectURL(currentFile) : initialPreviewUrl || null
   );
 
   const handleFileSelection = useCallback(

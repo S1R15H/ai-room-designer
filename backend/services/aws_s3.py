@@ -49,3 +49,18 @@ def create_presigned_url(object_name, expiration=3600):
         return None
 
     return response
+
+
+def get_file(object_name):
+    """
+    Retrieve a file from S3 and return its bytes.
+    """
+    s3 = get_s3_client()
+    bucket_name = os.getenv("S3_BUCKET_NAME")
+
+    try:
+        response = s3.get_object(Bucket=bucket_name, Key=object_name)
+        return response["Body"].read()
+    except ClientError as e:
+        print(f"Error getting file from S3: {e}")
+        return None

@@ -7,13 +7,14 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, StateGraph
 
 from services.aws_bedrock import invoke_model
-from services.aws_s3 import upload_file
+from services.aws_s3 import get_file, upload_file
 
 
 # Define the State
 class RoomDesignState(TypedDict):
     # Inputs
-    original_image_bytes: bytes
+    original_image_bytes: Optional[bytes]
+    original_image_key: Optional[str]
     original_filename: str
     style: str
     mood: str
@@ -180,7 +181,15 @@ def generate_image_node(state: RoomDesignState):
 
     print(f"Enhanced Prompt for Generation: {enhanced_prompt}")
 
-    generated_bytes = invoke_model(enhanced_prompt, state["original_image_bytes"])
+    original_bytes = state.get("original_image_bytes")
+    if not original_bytes and state.get("original_image_key"):
+        print(f"Fetching image from S3: {state['original_image_key']}")
+        original_bytes = get_file(state["original_image_key"])
+
+    if not original_bytes:
+        raise Exception("No original image bytes found in state or S3")
+
+    generated_bytes = invoke_model(enhanced_prompt, original_bytes)
 
     if not generated_bytes:
         raise Exception("Failed to generate image")
@@ -196,17 +205,24 @@ def generate_image_node(state: RoomDesignState):
 
     return {"generated_image_bytes": generated_bytes, "generated_image_url": generated_url}
 
+    return {"generated_image_bytes": generated_bytes, "generated_image_url": generated_url}
+
 
 # Build the Graph
-workflow = StateGraph(RoomDesignState)
+def get_app_graph(checkpointer=None):
+    workflow = StateGraph(RoomDesignState)
 
-workflow.add_node("build_prompt", build_prompt)
-workflow.add_node("select_items", select_items)
-workflow.add_node("generate_image", generate_image_node)
+    workflow.add_node("build_prompt", build_prompt)
+    workflow.add_node("select_items", select_items)
+    workflow.add_node("generate_image", generate_image_node)
 
-workflow.set_entry_point("build_prompt")
-workflow.add_edge("build_prompt", "select_items")
-workflow.add_edge("select_items", "generate_image")
-workflow.add_edge("generate_image", END)
+    workflow.set_entry_point("build_prompt")
+    workflow.add_edge("build_prompt", "select_items")
+    workflow.add_edge("select_items", "generate_image")
+    workflow.add_edge("generate_image", END)
 
-app_graph = workflow.compile()
+    return workflow.compile(checkpointer=checkpointer)
+
+
+# Default compilation for backward compatibility or testing without persistence
+app_graph = get_app_graph()

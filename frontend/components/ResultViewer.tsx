@@ -10,13 +10,17 @@ interface Item {
 }
 
 interface ResultViewerProps {
+  originalUrl?: string; // Optional if not always shown
   generatedUrl: string;
   items?: Item[];
+  onStartOver: () => void;
 }
 
 export default function ResultViewer({
+  originalUrl,
   generatedUrl,
   items = [],
+  onStartOver,
 }: ResultViewerProps) {
   const displayItems = React.useMemo(
     () =>
@@ -42,7 +46,7 @@ export default function ResultViewer({
           </h2>
         </div>
         <button
-          onClick={() => window.location.reload()}
+          onClick={onStartOver}
           className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-orange-500 text-orange-600 rounded-xl hover:bg-orange-50 transition-all shadow-lg hover:shadow-xl"
         >
           <RotateCcw className="w-4 h-4 mr-2" />

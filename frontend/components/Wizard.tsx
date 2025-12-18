@@ -1,11 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StepQuestion from './StepQuestion';
 import ResultViewer from './ResultViewer';
 import Upload from './Upload';
 import PromptInput from './PromptInput';
-import { generateRoomDesign } from '../lib/api';
+import {
+  generateRoomDesign,
+  getSessionHistory,
+  initSession,
+  Item,
+} from '../lib/api';
 
 const STEPS = [
   {
@@ -227,13 +232,6 @@ const STEPS = [
   },
 ];
 
-interface Item {
-  name: string;
-  link: string;
-  category?: string;
-  price?: number;
-}
-
 export default function Wizard() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -245,38 +243,222 @@ export default function Wizard() {
     items: Item[];
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [originalUrl, setOriginalUrl] = useState<string | null>(null);
+
+  const handleStartOver = () => {
+    localStorage.removeItem('room_designer_session');
+    // Clear answers for current thread if it exists
+    if (threadId) {
+      localStorage.removeItem(`room_designer_answers_${threadId}`);
+    }
+    localStorage.removeItem('room_designer_last_active');
+
+    // Reset state
+    setThreadId(null);
+    setAnswers({});
+    setFile(null);
+    setResult(null);
+    setOriginalUrl(null);
+    setCurrentStep(0);
+    setError(null);
+
+    // Clear URL param
+    window.history.replaceState(null, '', '/');
+  };
+
+  // Update activity timestamp on interactions
+  const updateActivity = () => {
+    localStorage.setItem('room_designer_last_active', Date.now().toString());
+  };
+
+  // Check for session in URL or LocalStorage on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      // Check timeout first (30 mins = 30 * 60 * 1000 ms)
+      const lastActive = localStorage.getItem('room_designer_last_active');
+      if (lastActive) {
+        const timeDiff = Date.now() - parseInt(lastActive);
+        if (timeDiff > 30 * 60 * 1000) {
+          console.log('Session timed out.');
+          handleStartOver();
+          return;
+        }
+      }
+      updateActivity(); // Update activity on load
+
+      // 1. Check URL
+      const params = new URLSearchParams(window.location.search);
+      const urlThreadId = params.get('session_id');
+
+      // 2. Check LocalStorage
+      const localThreadId = localStorage.getItem('room_designer_session');
+
+      const idToLoad = urlThreadId || localThreadId;
+
+      if (idToLoad) {
+        setIsProcessing(true);
+        try {
+          console.log(`Loading session: ${idToLoad}`);
+          const history = await getSessionHistory(idToLoad);
+
+          // Only show result if generation is complete (history has generated_url)
+          if (history.generated_url) {
+            setResult({
+              original_url: history.original_url,
+              generated_url: history.generated_url,
+              items: history.items,
+            });
+            // Jump to result
+            setCurrentStep(STEPS.length - 1);
+          } else if (history.original_url) {
+            setOriginalUrl(history.original_url);
+
+            // Determine the next unanswered step
+            const savedAnswersStr = localStorage.getItem(
+              `room_designer_answers_${idToLoad}`
+            );
+            const savedAnswers = savedAnswersStr
+              ? JSON.parse(savedAnswersStr)
+              : {};
+
+            let nextStepIndex = 1; // Default to first question (Style)
+
+            // Iterate through steps (skipping Upload=0, and stopping before Result)
+            for (let i = 1; i < STEPS.length - 1; i++) {
+              const stepId = STEPS[i].id;
+              // If we have an answer for this step, we can potentially move to the next one
+              if (savedAnswers[stepId]) {
+                nextStepIndex = i + 1;
+              } else {
+                // Found the first missing answer, stop here
+                nextStepIndex = i;
+                break;
+              }
+            }
+
+            // Cap at the last step before result if everything is answered
+            if (nextStepIndex >= STEPS.length - 1) {
+              nextStepIndex = STEPS.length - 2; // typically 'additional' logic
+            }
+
+            console.log(`Resuming session at step ${nextStepIndex}`);
+            setCurrentStep(nextStepIndex);
+          }
+
+          setThreadId(idToLoad);
+
+          // Ensure URL and LocalStorage are synced
+          localStorage.setItem('room_designer_session', idToLoad);
+          if (!urlThreadId) {
+            window.history.replaceState(null, '', `/?session_id=${idToLoad}`);
+          }
+        } catch (err) {
+          console.error('Failed to load session:', err);
+          // If fail, clear invalid session
+          localStorage.removeItem('room_designer_session');
+          window.history.replaceState(null, '', '/');
+        } finally {
+          setIsProcessing(false);
+        }
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  // Restore answers when session is restored
+  useEffect(() => {
+    if (threadId) {
+      const savedAnswers = localStorage.getItem(
+        `room_designer_answers_${threadId}`
+      );
+      if (savedAnswers) {
+        setAnswers((prev) => ({ ...prev, ...JSON.parse(savedAnswers) }));
+      }
+    }
+  }, [threadId]);
+
+  const handleFileSelect = (uploadedFile: File | null) => {
+    updateActivity();
+    setFile(uploadedFile);
+  };
+
+  const handleStartSession = async () => {
+    updateActivity();
+    if (!file) return;
+
+    setIsProcessing(true);
+    try {
+      const data = await initSession(file);
+      setThreadId(data.thread_id);
+      setOriginalUrl(data.original_url);
+
+      // Persist session immediately
+      localStorage.setItem('room_designer_session', data.thread_id);
+      window.history.replaceState(null, '', `/?session_id=${data.thread_id}`);
+
+      handleNext();
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Failed to init session');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleNext = () => {
+    updateActivity();
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
+    updateActivity();
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleSelect = (value: string) => {
+    updateActivity();
     const stepId = STEPS[currentStep].id;
-    setAnswers((prev) => ({ ...prev, [stepId]: value }));
+    const newAnswers = { ...answers, [stepId]: value };
+    setAnswers(newAnswers);
+
+    // Save partial answers to localStorage if we have a session
+    if (threadId) {
+      localStorage.setItem(
+        `room_designer_answers_${threadId}`,
+        JSON.stringify(newAnswers)
+      );
+    }
   };
 
   const handleGenerate = async () => {
-    if (!file) return;
+    updateActivity();
+    // If no threadId (shouldn't happen with new flow, but fallback), require file
+    if (!threadId && !file) return;
 
     setIsProcessing(true);
     setError(null);
 
     const formData = new FormData();
-    formData.append('file', file);
+    // Only append file if provided (it might not be if resuming)
+    if (file) formData.append('file', file);
+
     formData.append('style', answers['style'] || 'None');
     formData.append('mood', answers['mood'] || 'None');
     formData.append('functionality', answers['functionality'] || 'None');
     formData.append('palette', answers['palette'] || 'None');
     formData.append('clutter', answers['clutter'] || 'None');
     formData.append('additional_prompt', answers['additional'] || '');
+
+    // Pass existing threadId
+    if (threadId) {
+      formData.append('thread_id', threadId);
+    }
 
     try {
       const data = await generateRoomDesign(formData);
@@ -298,7 +480,12 @@ export default function Wizard() {
   // Render Steps
   if (step.id === 'upload') {
     return (
-      <Upload onFileSelect={setFile} currentFile={file} onNext={handleNext} />
+      <Upload
+        onFileSelect={handleFileSelect}
+        currentFile={file}
+        onNext={handleStartSession}
+        initialPreviewUrl={originalUrl}
+      />
     );
   }
 
@@ -306,9 +493,10 @@ export default function Wizard() {
     return (
       <PromptInput
         value={answers['additional'] || ''}
-        onChange={(value) =>
-          setAnswers((prev) => ({ ...prev, additional: value }))
-        }
+        onChange={(value) => {
+          updateActivity();
+          setAnswers((prev) => ({ ...prev, additional: value }));
+        }}
         onBack={handleBack}
         onGenerate={handleGenerate}
         isProcessing={isProcessing}
@@ -323,8 +511,19 @@ export default function Wizard() {
         originalUrl={result.original_url}
         generatedUrl={result.generated_url}
         items={result.items}
+        onStartOver={handleStartOver}
       />
     ) : null;
+  }
+
+  // Loading State for Resume
+  if (isProcessing && currentStep === 0 && !file) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12">
+        <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+        <p className="text-gray-500">Resuming your session...</p>
+      </div>
+    );
   }
 
   // Default Question Step
