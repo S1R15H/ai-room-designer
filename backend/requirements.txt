@@ -1,5 +1,6 @@
 fastapi
 ruff
+bandit
 python-multipart
 uvicorn
 python-dotenv
