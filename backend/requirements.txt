@@ -1,4 +1,5 @@
 fastapi
+ruff
 uvicorn
 python-dotenv
 boto3
