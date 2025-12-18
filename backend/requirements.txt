@@ -1,5 +1,6 @@
 fastapi
 ruff
+python-multipart
 uvicorn
 python-dotenv
 boto3
